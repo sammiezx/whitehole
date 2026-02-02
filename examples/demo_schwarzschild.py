@@ -17,6 +17,10 @@ Usage:
 
 import sys
 import numpy as np
+
+# Use non-interactive backend for running without display
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Add src to path for development
@@ -135,18 +139,18 @@ def demo_causal_classification():
     spacetime = Schwarzschild(M=1.0)
     classifier = CausalClassifier(
         spacetime,
-        n_theta=4,
-        n_phi=4,
-        escape_radius=100.0
+        n_theta=2,
+        n_phi=2,
+        escape_radius=50.0
     )
 
     # Classify points along radial slice
     print("\nClassifying points along radial slice (t=0)...")
-    r_values = np.linspace(1.5, 5.0, 15)
+    r_values = np.linspace(1.5, 5.0, 8)
 
     for r in r_values:
         result = classifier.classify_point(np.array([0.0, r, np.pi/2, 0.0]))
-        status = "✓ ESCAPING" if result.classification.value == "escaping" else "✗ TRAPPED"
+        status = "[OK] ESCAPING" if result.classification.value == "escaping" else "[X] TRAPPED"
         print(f"  r = {r:.2f}M: {status} (escape fraction: {result.escape_fraction:.0%})")
 
     # Find horizon numerically
@@ -172,13 +176,13 @@ def demo_classification_grid():
     print("=" * 60)
 
     spacetime = Schwarzschild(M=1.0)
-    classifier = CausalClassifier(spacetime, n_theta=3, n_phi=3)
+    classifier = CausalClassifier(spacetime, n_theta=2, n_phi=2, escape_radius=50.0)
     plotter = SpacetimePlotter(M=1.0)
 
-    # Create grid
+    # Create grid (smaller for speed)
     print("\nClassifying 2D grid (this may take a moment)...")
-    t_values = np.linspace(-5, 10, 12)
-    r_values = np.linspace(1.5, 6.0, 15)
+    t_values = np.linspace(-5, 10, 6)
+    r_values = np.linspace(1.5, 6.0, 8)
 
     classification = classifier.classify_grid(t_values, r_values)
 
@@ -295,9 +299,6 @@ def main():
     print("All demos complete!")
     print("Output saved to examples/output/")
     print("=" * 60)
-
-    # Show all figures
-    plt.show()
 
 
 if __name__ == "__main__":

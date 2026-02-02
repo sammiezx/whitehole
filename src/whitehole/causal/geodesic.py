@@ -14,9 +14,9 @@ In first-order form:
 For null geodesics: g_μν k^μ k^ν = 0
 """
 
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Callable, List, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -82,7 +82,11 @@ class GeodesicResult:
         return self.final_r > r_threshold
 
     def captured(self, r_threshold: float = 0.1) -> bool:
-        """Did the geodesic fall into the singularity?"""
+        """Did the geodesic fall into the singularity or cross the horizon?"""
+        if self.termination == TerminationReason.HORIZON_CROSSING:
+            return True
+        if self.termination == TerminationReason.SINGULARITY:
+            return True
         return self.final_r < r_threshold
 
 
@@ -147,8 +151,8 @@ class NullGeodesicTracer:
         def event(lambda_param: float, state: NDArray) -> float:
             r = state[1]
             return r - r_min
-        event.terminal = True
-        event.direction = -1  # Trigger when r decreases through r_min
+        event.terminal = True  # type: ignore[attr-defined]
+        event.direction = -1  # type: ignore[attr-defined]
         return event
 
     def _make_escape_event(
@@ -159,29 +163,32 @@ class NullGeodesicTracer:
         def event(lambda_param: float, state: NDArray) -> float:
             r = state[1]
             return r_max - r
-        event.terminal = True
-        event.direction = -1  # Trigger when r_max - r becomes negative (r > r_max)
+        event.terminal = True  # type: ignore[attr-defined]
+        event.direction = -1  # type: ignore[attr-defined]
         return event
 
     def _make_horizon_event(
         self,
-        r_horizon: float
+        r_horizon: float,
+        terminal: bool = True
     ) -> Callable[[float, NDArray], float]:
         """Create event function that triggers at horizon crossing."""
         def event(lambda_param: float, state: NDArray) -> float:
             r = state[1]
-            return r - r_horizon
-        event.terminal = False  # Don't stop, just record
-        event.direction = 0  # Trigger in either direction
+            # Stop slightly before horizon to avoid coordinate singularity
+            return r - (r_horizon + 0.001)
+        event.terminal = terminal  # type: ignore[attr-defined]
+        event.direction = -1  # type: ignore[attr-defined]
         return event
 
     def trace(
         self,
         position: NDArray[np.float64],
         direction: NDArray[np.float64],
-        lambda_span: Tuple[float, float] = (0.0, 1000.0),
+        lambda_span: tuple[float, float] = (0.0, 1000.0),
         r_escape: float = 500.0,
         r_singularity: float = 0.01,
+        r_horizon: float | None = None,
         dense_output: bool = False,
         enforce_null: bool = True,
     ) -> GeodesicResult:
@@ -195,6 +202,7 @@ class NullGeodesicTracer:
             lambda_span: (λ_start, λ_end) for affine parameter
             r_escape: Consider escaped if r exceeds this
             r_singularity: Consider at singularity if r below this
+            r_horizon: Horizon radius (stops integration to avoid coord singularity)
             dense_output: If True, return interpolated solution
             enforce_null: If True, adjust direction to satisfy null condition
 
@@ -235,6 +243,13 @@ class NullGeodesicTracer:
             self._make_singularity_event(r_singularity),
             self._make_escape_event(r_escape),
         ]
+
+        # Add horizon event to avoid coordinate singularity in Schwarzschild coords
+        # Auto-detect horizon if spacetime has r_s attribute
+        if r_horizon is None and hasattr(self.spacetime, 'r_s'):
+            r_horizon = self.spacetime.r_s
+        if r_horizon is not None:
+            events.append(self._make_horizon_event(r_horizon, terminal=True))
 
         # Integrate
         try:
@@ -288,7 +303,7 @@ class NullGeodesicTracer:
         solution: OdeResult,
         r_escape: float,
         r_singularity: float,
-        lambda_span: Tuple[float, float]
+        lambda_span: tuple[float, float]
     ) -> TerminationReason:
         """Determine why integration stopped."""
         # Check events
@@ -299,6 +314,9 @@ class NullGeodesicTracer:
             # Event 1: escape
             if len(solution.t_events[1]) > 0:
                 return TerminationReason.ESCAPED
+            # Event 2: horizon crossing (if present)
+            if len(solution.t_events) > 2 and len(solution.t_events[2]) > 0:
+                return TerminationReason.HORIZON_CROSSING
 
         # Check final position
         final_r = solution.y[1, -1]
@@ -306,6 +324,11 @@ class NullGeodesicTracer:
             return TerminationReason.SINGULARITY
         if final_r > r_escape:
             return TerminationReason.ESCAPED
+
+        # Check if near horizon (coordinate singularity in Schwarzschild coords)
+        if hasattr(self.spacetime, 'r_s'):
+            if abs(final_r - self.spacetime.r_s) < 0.1:
+                return TerminationReason.HORIZON_CROSSING
 
         # Check if we hit max parameter
         if abs(solution.t[-1] - lambda_span[1]) < 1e-6:
@@ -345,10 +368,10 @@ class NullGeodesicTracer:
 
     def trace_many(
         self,
-        positions: List[NDArray[np.float64]],
-        directions: List[NDArray[np.float64]],
+        positions: list[NDArray[np.float64]],
+        directions: list[NDArray[np.float64]],
         **kwargs
-    ) -> List[GeodesicResult]:
+    ) -> list[GeodesicResult]:
         """
         Trace multiple geodesics (for later parallelization).
 
@@ -371,7 +394,7 @@ class NullGeodesicTracer:
         n_theta: int = 8,
         n_phi: int = 8,
         radial_component: float = 1.0
-    ) -> List[NDArray[np.float64]]:
+    ) -> list[NDArray[np.float64]]:
         """
         Generate a set of outgoing null directions.
 

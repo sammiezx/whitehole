@@ -29,7 +29,7 @@ Key coordinate systems:
 All functions assume geometric units with G = c = 1.
 """
 
-from typing import Tuple, Optional
+
 import numpy as np
 from numpy.typing import NDArray
 from scipy.optimize import brentq
@@ -86,7 +86,7 @@ def schwarzschild_to_tortoise(
 def tortoise_to_schwarzschild(
     r_star: float,
     M: float = 1.0,
-    r_guess: Optional[float] = None
+    r_guess: float | None = None
 ) -> float:
     """
     Convert tortoise r* to Schwarzschild r (numerical inversion).
@@ -128,7 +128,7 @@ def schwarzschild_to_kruskal(
     r: float | NDArray,
     M: float = 1.0,
     region: str = "exterior"
-) -> Tuple[float | NDArray, float | NDArray]:
+) -> tuple[float | NDArray, float | NDArray]:
     """
     Convert Schwarzschild (t, r) to Kruskal-Szekeres (U, V).
 
@@ -163,7 +163,7 @@ def schwarzschild_to_kruskal(
     if region == "auto":
         is_exterior = r > rs
     else:
-        is_exterior = region == "exterior"
+        is_exterior = region == "exterior"  # type: ignore[assignment]
 
     # Broadcast to same shape
     if t.shape != r.shape:
@@ -213,7 +213,7 @@ def kruskal_to_schwarzschild(
     U: float,
     V: float,
     M: float = 1.0
-) -> Tuple[float, float, str]:
+) -> tuple[float, float, str]:
     """
     Convert Kruskal (U, V) to Schwarzschild (t, r) and determine region.
 
@@ -283,7 +283,7 @@ def kruskal_to_schwarzschild(
 def kruskal_to_penrose(
     U: float | NDArray,
     V: float | NDArray
-) -> Tuple[float | NDArray, float | NDArray]:
+) -> tuple[float | NDArray, float | NDArray]:
     """
     Compactify Kruskal coordinates to Penrose coordinates.
 
@@ -315,7 +315,7 @@ def kruskal_to_penrose(
 def penrose_to_kruskal(
     U_prime: float | NDArray,
     V_prime: float | NDArray
-) -> Tuple[float | NDArray, float | NDArray]:
+) -> tuple[float | NDArray, float | NDArray]:
     """
     Inverse of Penrose compactification.
 
@@ -332,7 +332,7 @@ def schwarzschild_to_penrose(
     r: float | NDArray,
     M: float = 1.0,
     region: str = "auto"
-) -> Tuple[float | NDArray, float | NDArray]:
+) -> tuple[float | NDArray, float | NDArray]:
     """
     Convert Schwarzschild (t, r) directly to Penrose (U', V').
 

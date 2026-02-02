@@ -14,20 +14,19 @@ This module provides tools to:
     4. Overlay causal classification
 """
 
-from typing import Optional, List, Tuple
-import numpy as np
-from numpy.typing import NDArray
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
-from matplotlib.patches import Polygon, FancyArrowPatch
-from matplotlib.collections import LineCollection
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.patches import Polygon
+from numpy.typing import NDArray
+
+from whitehole.causal.geodesic import GeodesicResult
 from whitehole.coordinates.transforms import (
     schwarzschild_to_penrose,
     transform_geodesic_to_penrose,
 )
-from whitehole.causal.geodesic import GeodesicResult
 
 
 class PenroseDiagram:
@@ -75,9 +74,9 @@ class PenroseDiagram:
 
     def create_figure(
         self,
-        figsize: Tuple[float, float] = (10, 10),
+        figsize: tuple[float, float] = (10, 10),
         title: str = "Penrose Diagram"
-    ) -> Tuple[Figure, Axes]:
+    ) -> tuple[Figure, Axes]:
         """
         Create a figure for the Penrose diagram.
 
@@ -198,8 +197,8 @@ class PenroseDiagram:
     def draw_constant_r_curves(
         self,
         ax: Axes,
-        r_values: List[float] = [3.0, 4.0, 6.0, 10.0],
-        t_range: Tuple[float, float] = (-20, 20),
+        r_values: list[float] = [3.0, 4.0, 6.0, 10.0],
+        t_range: tuple[float, float] = (-20, 20),
         n_points: int = 100,
         color: str = 'gray',
         alpha: float = 0.5
@@ -228,8 +227,8 @@ class PenroseDiagram:
     def draw_constant_t_curves(
         self,
         ax: Axes,
-        t_values: List[float] = [-10, -5, 0, 5, 10],
-        r_range: Tuple[float, float] = (2.01, 50),
+        t_values: list[float] = [-10, -5, 0, 5, 10],
+        r_range: tuple[float, float] = (2.01, 50),
         n_points: int = 100,
         color: str = 'lightgray',
         alpha: float = 0.3
@@ -257,7 +256,7 @@ class PenroseDiagram:
         result: GeodesicResult,
         color: str = 'green',
         linewidth: float = 1.5,
-        label: Optional[str] = None,
+        label: str | None = None,
         marker_start: bool = True,
         marker_end: bool = True
     ) -> None:
@@ -376,10 +375,10 @@ class PenroseDiagram:
 
     def create_standard_diagram(
         self,
-        geodesics: Optional[List[GeodesicResult]] = None,
+        geodesics: list[GeodesicResult] | None = None,
         show_grid: bool = True,
         title: str = "Schwarzschild Penrose Diagram"
-    ) -> Tuple[Figure, Axes]:
+    ) -> tuple[Figure, Axes]:
         """
         Create a complete standard Penrose diagram.
 
@@ -405,7 +404,6 @@ class PenroseDiagram:
 
         # Add geodesics
         if geodesics:
-            colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(geodesics)))
             for i, geo in enumerate(geodesics):
                 escaped = geo.escaped()
                 self.add_geodesic(

@@ -7,17 +7,17 @@ Provides side-by-side visualization in:
     - Penrose coordinates (U', V')
 """
 
-from typing import Optional, List, Tuple, Dict, Any
-import numpy as np
-from numpy.typing import NDArray
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.axes import Axes
+from typing import Any
 
-from whitehole.causal.geodesic import GeodesicResult, TerminationReason
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from numpy.typing import NDArray
+
+from whitehole.causal.geodesic import GeodesicResult
 from whitehole.coordinates.transforms import (
     schwarzschild_to_kruskal,
-    schwarzschild_to_penrose,
     transform_geodesic_to_penrose,
 )
 
@@ -46,13 +46,13 @@ class SpacetimePlotter:
         """
         self.M = M
         self.rs = 2 * M
-        self.geodesics: List[Tuple[GeodesicResult, Dict[str, Any]]] = []
+        self.geodesics: list[tuple[GeodesicResult, dict[str, Any]]] = []
 
     def add_geodesic(
         self,
         result: GeodesicResult,
-        label: Optional[str] = None,
-        color: Optional[str] = None,
+        label: str | None = None,
+        color: str | None = None,
         **kwargs
     ) -> None:
         """
@@ -79,8 +79,8 @@ class SpacetimePlotter:
         self,
         ax: Axes,
         show_horizon: bool = True,
-        t_range: Tuple[float, float] = (-20, 50),
-        r_range: Tuple[float, float] = (0.5, 15)
+        t_range: tuple[float, float] = (-20, 50),
+        r_range: tuple[float, float] = (0.5, 15)
     ) -> None:
         """
         Plot in Schwarzschild coordinates (t, r).
@@ -96,10 +96,10 @@ class SpacetimePlotter:
         # Draw horizon
         if show_horizon:
             ax.axvline(x=self.rs, color='red', linestyle='--',
-                       linewidth=2, label=f'Horizon (r=2M)')
+                       linewidth=2, label='Horizon (r=2M)')
 
         # Plot geodesics
-        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))
+        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))  # type: ignore[attr-defined]
         for i, (geo, style) in enumerate(self.geodesics):
             t = geo.positions[:, 0]
             r = geo.positions[:, 1]
@@ -152,7 +152,7 @@ class SpacetimePlotter:
             ax.plot(-u_pos[valid], -v_pos[valid], 'k-', linewidth=2.5, alpha=0.5)
 
         # Plot geodesics
-        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))
+        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))  # type: ignore[attr-defined]
         for i, (geo, style) in enumerate(self.geodesics):
             t = geo.positions[:, 0]
             r = geo.positions[:, 1]
@@ -170,9 +170,9 @@ class SpacetimePlotter:
             # Filter valid points
             valid = (np.abs(U) < uv_range) & (np.abs(V) < uv_range)
             if np.any(valid):
-                ax.plot(U[valid], V[valid], color=color, linewidth=1.5, label=label)
+                ax.plot(U[valid], V[valid], color=color, linewidth=1.5, label=label)  # type: ignore[index]
                 if valid[0]:
-                    ax.plot(U[0], V[0], 'o', color=color, markersize=5)
+                    ax.plot(U[0], V[0], 'o', color=color, markersize=5)  # type: ignore[index]
 
         ax.legend(loc='upper left', fontsize=8)
         ax.grid(True, alpha=0.3)
@@ -216,7 +216,7 @@ class SpacetimePlotter:
             ax.plot(0, -np.pi/2, 'bv', markersize=6)
 
         # Plot geodesics
-        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))
+        colors = plt.cm.tab10(np.linspace(0, 1, max(len(self.geodesics), 1)))  # type: ignore[attr-defined]
         for i, (geo, style) in enumerate(self.geodesics):
             try:
                 penrose_coords = transform_geodesic_to_penrose(geo.positions, self.M)
@@ -239,7 +239,7 @@ class SpacetimePlotter:
 
     def plot_all_coordinates(
         self,
-        figsize: Tuple[float, float] = (15, 5),
+        figsize: tuple[float, float] = (15, 5),
         title: str = "Null Geodesics in Multiple Coordinate Systems"
     ) -> Figure:
         """
@@ -263,9 +263,9 @@ class SpacetimePlotter:
         classification: NDArray[np.int32],
         t_values: NDArray[np.float64],
         r_values: NDArray[np.float64],
-        ax: Optional[Axes] = None,
+        ax: Axes | None = None,
         title: str = "Causal Classification"
-    ) -> Tuple[Figure, Axes]:
+    ) -> tuple[Figure, Axes]:
         """
         Plot a 2D classification grid.
 
@@ -282,7 +282,7 @@ class SpacetimePlotter:
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
         else:
-            fig = ax.get_figure()
+            fig = ax.get_figure()  # type: ignore[assignment]
 
         # Custom colormap: red (trapped), yellow (boundary), green (escaping)
         from matplotlib.colors import ListedColormap

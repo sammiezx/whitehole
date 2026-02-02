@@ -7,10 +7,10 @@ and Penrose diagrams from spacetime data.
 
 __version__ = "0.1.0"
 
+from whitehole.causal.classifier import CausalClassifier
+from whitehole.causal.geodesic import NullGeodesicTracer
 from whitehole.spacetimes.schwarzschild import Schwarzschild
 from whitehole.spacetimes.vaidya import Vaidya
-from whitehole.causal.geodesic import NullGeodesicTracer
-from whitehole.causal.classifier import CausalClassifier
 
 __all__ = [
     "Schwarzschild",

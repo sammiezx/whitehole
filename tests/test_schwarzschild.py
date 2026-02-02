@@ -176,9 +176,9 @@ class TestSpacetimeProperties:
         x_at = np.array([0.0, 2.0, np.pi/2, 0.0])
         x_inside = np.array([0.0, 1.5, np.pi/2, 0.0])
 
-        assert spacetime.is_outside_horizon(x_outside) is True
-        assert spacetime.is_outside_horizon(x_at) is False
-        assert spacetime.is_outside_horizon(x_inside) is False
+        assert spacetime.is_outside_horizon(x_outside)
+        assert not spacetime.is_outside_horizon(x_at)
+        assert not spacetime.is_outside_horizon(x_inside)
 
     def test_isco_radius(self, spacetime):
         """ISCO should be at 6M."""

@@ -22,7 +22,7 @@ Key features:
 import numpy as np
 from numpy.typing import NDArray
 
-from whitehole.spacetimes.base import SpacetimeMetric, CoordinateSystem
+from whitehole.spacetimes.base import CoordinateSystem, SpacetimeMetric
 
 
 class Schwarzschild(SpacetimeMetric):
@@ -250,7 +250,6 @@ class Schwarzschild(SpacetimeMetric):
         if r <= self.r_s:
             return 0.0
 
-        M = self.M
         rs = self.r_s
 
         # Proper distance: r*√(1-2M/r) + 2M*ln(√(r/2M - 1) + √(r/2M))

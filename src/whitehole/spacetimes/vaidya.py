@@ -24,11 +24,12 @@ The event horizon location depends on the ENTIRE future evolution M(v),
 making Vaidya ideal for demonstrating horizon teleology.
 """
 
-from typing import Callable, Optional
+from collections.abc import Callable
+
 import numpy as np
 from numpy.typing import NDArray
 
-from whitehole.spacetimes.base import SpacetimeMetric, CoordinateSystem
+from whitehole.spacetimes.base import CoordinateSystem, SpacetimeMetric
 
 
 class Vaidya(SpacetimeMetric):
@@ -54,7 +55,7 @@ class Vaidya(SpacetimeMetric):
 
     def __init__(
         self,
-        mass_function: Optional[Callable[[float], float]] = None,
+        mass_function: Callable[[float], float] | None = None,
         M_final: float = 1.0,
         collapse_time: float = 10.0
     ):

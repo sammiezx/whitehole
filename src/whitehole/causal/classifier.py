@@ -14,12 +14,12 @@ Algorithm:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple, Optional
+
 import numpy as np
 from numpy.typing import NDArray
 
+from whitehole.causal.geodesic import GeodesicResult, NullGeodesicTracer, TerminationReason
 from whitehole.spacetimes.base import SpacetimeMetric
-from whitehole.causal.geodesic import NullGeodesicTracer, GeodesicResult, TerminationReason
 
 
 class PointClassification(Enum):
@@ -47,8 +47,8 @@ class ClassificationResult:
     classification: PointClassification
     escape_fraction: float
     n_rays_traced: int
-    escaping_rays: List[GeodesicResult]
-    trapped_rays: List[GeodesicResult]
+    escaping_rays: list[GeodesicResult]
+    trapped_rays: list[GeodesicResult]
 
     @property
     def r(self) -> float:
@@ -76,7 +76,7 @@ class CausalClassifier:
     def __init__(
         self,
         spacetime: SpacetimeMetric,
-        tracer: Optional[NullGeodesicTracer] = None,
+        tracer: NullGeodesicTracer | None = None,
         n_theta: int = 4,
         n_phi: int = 4,
         escape_radius: float = 200.0,
@@ -177,7 +177,7 @@ class CausalClassifier:
         t: float = 0.0,
         theta: float = np.pi / 2,
         phi: float = 0.0,
-    ) -> List[ClassificationResult]:
+    ) -> list[ClassificationResult]:
         """
         Classify points along a radial slice (fixed t, θ, φ).
 
@@ -207,7 +207,7 @@ class CausalClassifier:
         phi: float = 0.0,
         tolerance: float = 0.01,
         max_iterations: int = 50
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """
         Find the horizon radius using bisection.
 

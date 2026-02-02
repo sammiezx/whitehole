@@ -1,7 +1,7 @@
 """Causal structure computation: geodesics, classification, horizons."""
 
-from whitehole.causal.geodesic import NullGeodesicTracer, GeodesicResult
 from whitehole.causal.classifier import CausalClassifier, PointClassification
+from whitehole.causal.geodesic import GeodesicResult, NullGeodesicTracer
 
 __all__ = [
     "NullGeodesicTracer",
